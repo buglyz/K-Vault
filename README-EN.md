@@ -61,12 +61,13 @@
 - Storage capability cards now keep all adapters visible (configured or not) with explicit status/hints.
 - Existing direct links (`/file/:id`) remain compatible.
 
-### Cloudflare Pages (No Dashboard Build Setting Changes)
+### Cloudflare Pages (No Build Step)
 
 A lightweight workflow note is included in `.github/workflows/pages-deploy.yml`.
 
 - No Cloudflare API secrets are required in this repository by default.
 - Recommended deployment path is Cloudflare Pages Git integration (connect your fork directly in Cloudflare Dashboard).
+- Leave Build command and Build output directory empty. K-Vault serves the root static pages plus `functions/`; `frontend/dist` is not part of the current Pages deployment.
 - If you want CLI deployment, run Wrangler locally with your own credentials.
 
 Recommended architecture for multi-cloud mounts:
@@ -104,11 +105,21 @@ Recommended architecture for multi-cloud mounts:
 
 2. **Create a Pages project**
    - Log in to [Cloudflare Dashboard](https://dash.cloudflare.com)
-   - Go to `Workers and Pages` 鈫?`Create Application` 鈫?`Pages` 鈫?`Connect to Git`
-   - Select the forked repository and deploy
+   - Go to `Workers and Pages` -> `Create Application` -> `Pages` -> `Connect to Git`
+   - Select the forked repository
+   - Use these build settings:
+
+| Item | Value |
+| :--- | :--- |
+| Framework preset | `None` |
+| Root directory | Empty (repository root) |
+| Install command | Empty |
+| Build command | Empty |
+| Build output directory | Empty |
+| Deploy command | Empty |
 
 3. **Configure environment variables**
-   - Go to project `Settings` 鈫?`Environment variables`
+   - Go to project `Settings` -> `Environment variables`
    - Add required variables:
 
 | Variable | Description | Required |
@@ -153,7 +164,7 @@ docker compose --profile redis up -d --build
 ```
 
 4. Access:
-   - Legacy UI: `http://<host>:8080/`
+   - Upload UI: `http://<host>:8080/`
    - WebDAV page: `http://<host>:8080/webdav.html`
 
 For full Docker guide, see [README-DOCKER.md](README-DOCKER.md).
@@ -175,7 +186,7 @@ node scripts/storage-regression.js
 Validation criteria:
 
 - `webdav.connected` in `/api/status` must be `true`
-- `/api/storage/:id/test` must return `connected=true`
+- Docker/self-hosted deployments can additionally verify `/api/storage/:id/test` returns `connected=true`
 - WebDAV `upload / download / delete` in the regression script must all pass
 
 For Docker deployment, simply change `BASE_URL` to your self-hosted address, for example `http://localhost:8080`.
@@ -245,9 +256,9 @@ After enabling this, Telegram files still write a lightweight KV index by defaul
 
 To enable image management, configure KV:
 
-1. Go to Cloudflare Dashboard 鈫?`Workers and Pages` 鈫?`KV`
+1. Go to Cloudflare Dashboard -> `Workers and Pages` -> `KV`
 2. Click `Create namespace`, name it `k-vault`
-3. Go to your Pages project 鈫?`Settings` 鈫?`Functions` 鈫?`KV namespace bindings`
+3. Go to your Pages project -> `Settings` -> `Functions` -> `KV namespace bindings`
 4. Add binding: variable name `img_url`, choose the namespace you created
 5. Redeploy the project
 
@@ -256,15 +267,15 @@ To enable image management, configure KV:
 Configure R2 to support uploads up to 100MB:
 
 1. **Create a bucket**
-   - Cloudflare Dashboard 鈫?`R2 Object Storage` 鈫?`Create bucket`
+   - Cloudflare Dashboard -> `R2 Object Storage` -> `Create bucket`
    - Name it `k-vault-files`
 
 2. **Bind to the project**
-   - Pages project 鈫?`Settings` 鈫?`Functions` 鈫?`R2 bucket bindings`
+   - Pages project -> `Settings` -> `Functions` -> `R2 bucket bindings`
    - Variable name `R2_BUCKET`, choose your bucket
 
 3. **Enable R2**
-   - `Settings` 鈫?`Environment variables` 鈫?add `USE_R2` = `true`
+   - `Settings` -> `Environment variables` -> add `USE_R2` = `true`
    - Redeploy
 
 > If redeploy fails with `binding R2_BUCKET of type r2_bucket contains an invalid jurisdiction`, Cloudflare Pages is rejecting the R2 binding metadata before K-Vault code runs. Normal R2 buckets should not set `jurisdiction`; only residency-restricted buckets use `eu` or `fedramp`. Follow [Cloudflare Pages R2 binding troubleshooting](docs/cloudflare-pages-r2.md) to rebuild Production/Preview bindings, or run `npm run pages:r2:doctor -- --check` to validate `wrangler.jsonc`.
@@ -316,7 +327,7 @@ Store files through a Discord channel, supporting both Webhook and Bot modes.
 
 **Webhook deployment (recommended):**
 
-1. In your Discord server, go to channel settings 鈫?Integrations 鈫?Webhooks
+1. In your Discord server, go to channel settings -> Integrations -> Webhooks
 2. Create a new Webhook and copy the Webhook URL
 3. Add environment variable `DISCORD_WEBHOOK_URL` in Cloudflare Pages
 4. (Recommended) Also create a Discord Bot and set `DISCORD_BOT_TOKEN` for file retrieval and deletion
@@ -326,7 +337,7 @@ Store files through a Discord channel, supporting both Webhook and Bot modes.
 
 1. Go to [Discord Developer Portal](https://discord.com/developers/applications) and create an application
 2. Create a Bot in the Bot tab and get the token
-3. In OAuth2 鈫?URL Generator, select `bot` scope and grant `Administrator` permission to the Bot
+3. In OAuth2 -> URL Generator, select `bot` scope and grant `Administrator` permission to the Bot
 4. Use the generated URL to invite the Bot to your server
 5. Add `DISCORD_BOT_TOKEN` and `DISCORD_CHANNEL_ID` in Cloudflare Pages
 6. Redeploy
@@ -357,8 +368,8 @@ Use HuggingFace Datasets API to store files. Files are saved to a Dataset reposi
 **Deployment steps:**
 
 1. Register a [HuggingFace](https://huggingface.co) account
-2. Create a new Dataset repository (Settings 鈫?New Dataset)
-3. Go to [Settings 鈫?Access Tokens](https://huggingface.co/settings/tokens) and create a token (requires Write permission)
+2. Create a new Dataset repository (Settings -> New Dataset)
+3. Go to [Settings -> Access Tokens](https://huggingface.co/settings/tokens) and create a token (requires Write permission)
 4. Add `HF_TOKEN` and `HF_REPO` environment variables in Cloudflare Pages
 5. Redeploy
 

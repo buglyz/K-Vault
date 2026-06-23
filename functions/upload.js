@@ -1,4 +1,4 @@
-﻿import { errorHandling, telemetryData } from "./utils/middleware";
+import { errorHandling, telemetryData } from "./utils/middleware.js";
 import { checkAuthentication, isAuthRequired } from "./utils/auth.js";
 import { checkGuestUpload, incrementGuestCount } from "./utils/guest.js";
 import { createS3Client } from "./utils/s3client.js";
@@ -18,6 +18,33 @@ import {
 } from "./utils/telegram.js";
 
 const MB = 1024 * 1024;
+
+async function serveUploadPage(context, headOnly = false) {
+  const { request, env } = context;
+
+  if (env?.ASSETS?.fetch) {
+    const assetUrl = new URL("/index.html", request.url);
+    const assetRequest = new Request(assetUrl.toString(), {
+      method: headOnly ? "HEAD" : "GET",
+      headers: request.headers,
+    });
+    return env.ASSETS.fetch(assetRequest);
+  }
+
+  if (typeof context.next === "function") {
+    return context.next();
+  }
+
+  return Response.redirect(new URL("/", request.url).toString(), 302);
+}
+
+export async function onRequestGet(context) {
+  return serveUploadPage(context);
+}
+
+export async function onRequestHead(context) {
+  return serveUploadPage(context, true);
+}
 
 export async function onRequestPost(context) {
   const { request, env } = context;

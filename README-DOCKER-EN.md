@@ -50,7 +50,7 @@ npm run docker:up
 
 1. Open:
 
-- Legacy UI: `http://<host>:8080/`
+- Upload UI: `http://<host>:8080/`
 - WebDAV Page: `http://<host>:8080/webdav.html`
 
 Expected startup status:
@@ -112,9 +112,10 @@ curl -i -X POST "http://localhost:8080/api/auth/login" \
   - Multi-backend adapters: Telegram / R2 / S3 / Discord / HuggingFace / WebDAV / GitHub
 - `web`: Nginx static host + reverse proxy
   - `/api/*` -> backend
-  - `/upload` -> backend
+  - `GET /upload` -> root upload UI, `POST /upload` -> backend
   - `/file/*` -> backend
-  - `/` and other legacy pages -> static legacy HTML
+  - `/share/*` and `/s/*` -> backend
+  - `/` and other root pages -> static HTML
 
 Persistent data is stored in Docker volume `kvault_data` (and `kvault_redis` when Redis profile is enabled).
 
@@ -130,7 +131,7 @@ Direct-link compatibility:
 - Existing `/file/:id` links remain unchanged
 - Folder operations only modify metadata path, not file IDs
 
-## Cloudflare Pages Without Dashboard Build Settings
+## Cloudflare Pages Without Build Settings
 
 Repository includes a lightweight note workflow:
 
@@ -141,6 +142,14 @@ Current recommended deployment for Pages is:
 1. Fork repository
 2. Connect fork in Cloudflare Dashboard (Git integration)
 3. Deploy directly from Cloudflare Pages
+
+Keep these Pages Git integration fields empty:
+
+- Build command
+- Build output directory
+- Deploy command
+
+The current Pages deployment serves repository-root static pages and `functions/` directly. Do not configure `npm run build` or `frontend/dist`.
 
 No `CF_API_TOKEN` / `CF_ACCOUNT_ID` / `CF_PAGES_PROJECT` secrets are required in this repository by default.
 
@@ -425,11 +434,4 @@ npm --prefix server install
 npm --prefix server run dev
 ```
 
-- Frontend:
-
-```bash
-npm --prefix frontend install
-npm --prefix frontend run dev
-```
-
-Docker runtime now serves root static pages directly, aligned with Cloudflare Pages behavior.
+Root static pages are served directly. Use `npm start` to preview Cloudflare Pages behavior locally, or `npm run docker:up` for the complete self-hosted stack.

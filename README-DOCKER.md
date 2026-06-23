@@ -134,7 +134,7 @@ curl -i -X POST "http://localhost:8080/api/auth/login" \
 - `web`：Nginx 静态托管 + 反代
   - `/api/*` -> `api:8787`
   - `GET /upload` -> 根目录上传页，`POST /upload` -> `api:8787/upload`
-  - `/file/*`、`/share/*` -> `api:8787`
+  - `/file/*`、`/share/*`、`/s/*` -> `api:8787`
   - `/` -> 根目录静态页面
 
 持久化卷：
@@ -144,12 +144,17 @@ curl -i -X POST "http://localhost:8080/api/auth/login" \
 
 ---
 
-## Cloudflare Pages 说明（无 Dashboard 构建配置改造）
+## Cloudflare Pages 说明（无需构建命令）
 
 - 推荐流程：
   1. Fork 仓库
   2. 在 Cloudflare Pages 中连接 fork
   3. 直接部署
+- Pages Git 集成构建设置保持为空：
+  - Build command：留空
+  - Build output directory：留空
+  - Deploy command：留空
+- 当前 Pages 直接发布仓库根目录静态页面和 `functions/`，不要再配置 `npm run build` 或 `frontend/dist`。
 - 仓库中的 `.github/workflows/pages-deploy.yml` 只保留说明用途，不默认执行密钥化 CLI 发布。
 - 如果 R2 绑定导致 Pages Functions 发布失败（`invalid jurisdiction`），按 [Cloudflare Pages R2 绑定排查](docs/cloudflare-pages-r2.md) 重建 `R2_BUCKET` 绑定或生成干净的 `wrangler.jsonc`。
 
@@ -421,11 +426,4 @@ npm --prefix server install
 npm --prefix server run dev
 ```
 
-前端：
-
-```bash
-npm --prefix frontend install
-npm --prefix frontend run dev
-```
-
-Docker 运行时当前以根目录静态页为主，与 Cloudflare Pages 行为对齐。
+前端静态页面位于仓库根目录。需要本地预览 Cloudflare Pages 行为时，使用根目录的 `npm start`；需要完整自托管链路时，使用 `npm run docker:up`。

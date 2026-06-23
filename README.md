@@ -90,13 +90,13 @@
 | :--- | :--- |
 | Framework preset | `None` / 不使用预设 |
 | Root directory | 留空（仓库根目录） |
-| Install command | 留空或 `npm ci` |
-| Build command | `npm run build` |
-| Build output directory | `frontend/dist` |
+| Install command | 留空 |
+| Build command | 留空 |
+| Build output directory | 留空 |
 | Deploy command | 留空 |
 
 > 不要在 Pages Git 集成里填写 `npx wrangler deploy`。这是 Workers 部署命令，不是 Pages 部署命令；填错会出现 `The detected framework ("Hono") cannot be automatically configured` 一类错误。
-> 本仓库的根目录 `build` 脚本会先安装 `frontend` 依赖，再生成 `frontend/dist`，因此不需要把项目根目录改到 `frontend`。
+> 本项目的 Cloudflare Pages 入口就是仓库根目录静态页面（`/`、`/admin.html`、`/webdav.html`）加 `functions/`。不要填写 `npm run build` 或 `frontend/dist`，否则会偏离当前根目录 UI 部署方式。
 
 3. **绑定 KV（图片管理/分片任务必需）**
    - 进入 Cloudflare Dashboard → `Workers 和 Pages` → `KV`
@@ -121,19 +121,19 @@
 
 **可选：Wrangler Direct Upload**
 
-如果你不使用 Git 集成，而是想本地构建后直接上传 Pages 产物：
+如果你不使用 Git 集成，而是想从本地直接上传当前仓库根目录：
 
 ```bash
 npm run pages:deploy -- --project-name <你的 Pages 项目名>
 ```
 
-等价于先运行 `npm run build`，再执行 `npx wrangler pages deploy frontend/dist`。不要把 Direct Upload 项目和 Git 集成项目混用；Cloudflare Pages 文档也说明两种创建方式后续不能直接互相切换。
+等价于执行 `npx wrangler pages deploy .`，直接上传仓库根目录。不要把 Direct Upload 项目和 Git 集成项目混用；Cloudflare Pages 文档也说明两种创建方式后续不能直接互相切换。
 
 **常见部署错误**
 
 - `The detected framework ("Hono") cannot be automatically configured`：把 Pages 项目误配成了 `npx wrangler deploy`。删除 Deploy command，使用上表的 Pages 构建设置。
-- 构建成功但页面 404：Build output directory 填错了，应为 `frontend/dist`，不是 `dist`。
-- `vite: not found`：说明前端依赖没有安装。使用最新仓库的 `npm run build`，不要只在根目录手写 `npm --prefix frontend run build`。
+- 部署后出现旧版 landing 首页或进不了上传页：确认 Build command 和 Build output directory 都是留空，不要填 `npm run build` 或 `frontend/dist`。
+- 构建成功但页面 404：Build output directory 不应填写 `dist` 或 `frontend/dist`，留空即可发布仓库根目录页面。
 - R2 `invalid jurisdiction`：这是 Cloudflare 绑定元数据问题，不是 K-Vault 上传代码问题，按 [Cloudflare Pages R2 绑定排查](docs/cloudflare-pages-r2.md) 处理。
 
 ### 第三步：Docker 自托管部署（可选）
@@ -191,7 +191,7 @@ node scripts/storage-regression.js
 校验标准：
 
 - `/api/status` 中 `webdav.connected` 必须为 `true`
-- `/api/storage/:id/test` 必须返回 `connected=true`
+- Docker 自托管部署可额外校验 `/api/storage/:id/test` 返回 `connected=true`
 - 回归脚本中的 WebDAV `upload / download / delete` 三步必须全部通过
 
 如果是 Docker 部署，只需把 `BASE_URL` 换成你的自托管地址，例如 `http://localhost:8080`。
@@ -779,11 +779,15 @@ kvault() {
 
 ---
 
-## 致谢
+## 致谢 / Acknowledgements
 
-本项目参考了以下开源项目：
+K-Vault 的早期实现与功能演进参考并受益于多个开源项目、社区讨论与用户反馈。
 
-- [Telegraph-Image](https://github.com/cf-pages/Telegraph-Image) - 原始灵感来源
+- [Telegraph-Image](https://github.com/cf-pages/Telegraph-Image)：K-Vault 早期 Serverless 图床形态的重要上游参考之一。
+- [CloudFlare-ImgBed](https://github.com/MarSeventh/CloudFlare-ImgBed)：优秀的同类开源图床项目，对社区图床方案、多存储后端设计方向以及相关项目生态具有参考价值。
+- Linux.do 社区用户反馈：K-Vault 的多存储后端、Docker 部署形态、WebDAV 等功能方向，均受社区讨论与实际使用需求推动。
+
+K-Vault 并非对上述项目的简单复制，而是在相关开源生态、社区反馈和实际使用需求的基础上，逐步整理、扩展和实现的个人项目。感谢所有开源项目作者与社区用户的贡献和建议。
 
 ---
 

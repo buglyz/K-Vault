@@ -20,7 +20,6 @@ COPY *.js /usr/share/nginx/html/
 COPY *.svg /usr/share/nginx/html/
 COPY *.png /usr/share/nginx/html/
 COPY *.ico /usr/share/nginx/html/
-COPY _nuxt /usr/share/nginx/html/_nuxt
 
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
