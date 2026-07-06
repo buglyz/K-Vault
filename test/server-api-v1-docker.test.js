@@ -146,7 +146,7 @@ describe('Docker runtime API v1 parity', function () {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        ids: ['photo-display-name.webp'],
+        files: [{ fileName: 'photo-display-name.webp' }],
         targetFolderPath: '图片',
       }),
     }));

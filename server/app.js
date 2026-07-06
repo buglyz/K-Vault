@@ -138,6 +138,42 @@ function createApp() {
     return '';
   }
 
+  function normalizeMoveIdentifier(value) {
+    const raw = asString(value).trim();
+    if (!raw) return '';
+    let decoded = raw;
+    try {
+      decoded = decodeURIComponent(raw);
+    } catch {
+      decoded = raw;
+    }
+    return decoded
+      .replace(/^https?:\/\/[^/]+\/file\//i, '')
+      .replace(/^\/?file\//i, '')
+      .trim();
+  }
+
+  function collectMoveIdentifiers(body = {}) {
+    const values = [];
+    if (Array.isArray(body.ids)) values.push(...body.ids);
+    if (Array.isArray(body.files)) {
+      for (const file of body.files) {
+        if (!file || typeof file !== 'object') continue;
+        values.push(
+          file.id,
+          file.name,
+          file.key,
+          file.fileId,
+          file.fileName,
+          file.metadata?.id,
+          file.metadata?.fileId,
+          file.metadata?.fileName
+        );
+      }
+    }
+    return Array.from(new Set(values.map(normalizeMoveIdentifier).filter(Boolean)));
+  }
+
   function parseBoundedInt(value, fallback, min = 1, max = 1000) {
     const parsed = Number.parseInt(String(value || ''), 10);
     if (!Number.isFinite(parsed)) return fallback;
@@ -2494,7 +2530,7 @@ function createApp() {
 
     const { fileRepo } = getServices(c);
     const body = await c.req.json().catch(() => ({}));
-    const ids = Array.isArray(body.ids) ? body.ids : [];
+    const ids = collectMoveIdentifiers(body);
     const targetFolderPath = normalizeFolderPath(body.targetFolderPath || body.path || '');
 
     const result = fileRepo.moveFiles(ids, targetFolderPath);
@@ -2518,7 +2554,7 @@ function createApp() {
 
     const { fileRepo } = getServices(c);
     const body = await c.req.json().catch(() => ({}));
-    const ids = Array.isArray(body.ids) ? body.ids : [];
+    const ids = collectMoveIdentifiers(body);
     const targetFolderPath = normalizeFolderPath(body.targetFolderPath || body.folderPath || body.path || '');
 
     const result = fileRepo.moveFiles(ids, targetFolderPath);

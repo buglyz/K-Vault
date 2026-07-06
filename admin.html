@@ -372,6 +372,138 @@
     body.is-dragging-files .folder-node.is-drop-target {
       box-shadow: inset 0 0 0 1px rgba(67, 195, 124, 0.55), 0 4px 12px rgba(67, 195, 124, 0.18);
     }
+    .move-folder-dialog .el-dialog__body {
+      padding-top: 10px;
+    }
+    .move-folder-panel {
+      display: grid;
+      gap: 14px;
+    }
+    .move-folder-summary {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 14px;
+      border-radius: 12px;
+      background: rgba(138, 75, 255, 0.08);
+      color: #4f3d75;
+      font-size: 13px;
+    }
+    .move-folder-summary strong {
+      color: #4a2d85;
+      font-size: 15px;
+    }
+    .move-folder-toolbar {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 10px;
+      align-items: center;
+    }
+    .move-folder-list {
+      display: grid;
+      gap: 8px;
+      max-height: 280px;
+      overflow: auto;
+      padding: 4px 2px;
+    }
+    .move-folder-option {
+      width: 100%;
+      border: 1px solid rgba(138, 75, 255, 0.14);
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.82);
+      color: #3e3454;
+      padding: 11px 12px;
+      cursor: pointer;
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      gap: 10px;
+      align-items: center;
+      text-align: left;
+      transition: background-color 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+    }
+    .move-folder-option:hover,
+    .move-folder-option.is-active {
+      border-color: rgba(138, 75, 255, 0.55);
+      background: rgba(138, 75, 255, 0.1);
+      box-shadow: 0 6px 18px rgba(138, 75, 255, 0.1);
+    }
+    .move-folder-option-name {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-weight: 650;
+    }
+    .move-folder-option-meta {
+      color: #82759a;
+      font-size: 12px;
+    }
+    .move-folder-create {
+      border: 1px dashed rgba(138, 75, 255, 0.38);
+      border-radius: 12px;
+      padding: 12px;
+      background: rgba(138, 75, 255, 0.05);
+      display: grid;
+      gap: 10px;
+    }
+    .move-folder-create-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 10px;
+    }
+    .move-folder-empty {
+      padding: 18px;
+      border-radius: 12px;
+      border: 1px dashed rgba(138, 75, 255, 0.25);
+      color: #82759a;
+      text-align: center;
+      background: rgba(255, 255, 255, 0.72);
+    }
+    .move-folder-footer {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .move-folder-target {
+      color: #63557f;
+      font-size: 13px;
+    }
+    @media (max-width: 720px) {
+      .move-folder-dialog {
+        width: calc(100vw - 28px) !important;
+        margin: 6vh auto 0 !important;
+      }
+      .move-folder-dialog .el-dialog__body {
+        padding: 10px 14px 14px;
+      }
+      .move-folder-summary {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+      .move-folder-toolbar,
+      .move-folder-create-row {
+        grid-template-columns: 1fr;
+      }
+      .move-folder-list {
+        max-height: 240px;
+      }
+      .move-folder-footer {
+        align-items: stretch;
+      }
+      .move-folder-footer > span:last-child {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 8px;
+        width: 100%;
+      }
+      .move-folder-footer .el-button {
+        width: 100%;
+        margin-left: 0;
+      }
+    }
     .empty-tip {
       margin: 26px auto 8px;
       max-width: 620px;
@@ -414,6 +546,31 @@
     }
     html[data-theme="dark"] .folder-drop-hint strong {
       color: #d9ffe7;
+    }
+    html[data-theme="dark"] .move-folder-summary,
+    html[data-theme="dark"] .move-folder-create,
+    html[data-theme="dark"] .move-folder-empty {
+      background: rgba(103, 118, 255, 0.12);
+      border-color: rgba(135, 152, 255, 0.28);
+      color: #dce7ff;
+    }
+    html[data-theme="dark"] .move-folder-summary strong,
+    html[data-theme="dark"] .move-folder-option-name {
+      color: #eef4ff;
+    }
+    html[data-theme="dark"] .move-folder-option {
+      background: rgba(18, 25, 41, 0.88);
+      border-color: rgba(120, 145, 192, 0.25);
+      color: #dce7ff;
+    }
+    html[data-theme="dark"] .move-folder-option:hover,
+    html[data-theme="dark"] .move-folder-option.is-active {
+      background: rgba(103, 118, 255, 0.2);
+      border-color: rgba(135, 152, 255, 0.55);
+    }
+    html[data-theme="dark"] .move-folder-option-meta,
+    html[data-theme="dark"] .move-folder-target {
+      color: #aebde0;
     }
     html[data-theme="dark"] .folder-node {
       color: #dce7ff;
@@ -1547,6 +1704,96 @@
       </div>
     </el-dialog>
 
+    <el-dialog
+      title="移动文件"
+      :visible.sync="moveDialogVisible"
+      width="680px"
+      append-to-body
+      custom-class="move-folder-dialog"
+      @opened="refreshMoveDialogFolders">
+      <div class="move-folder-panel">
+        <div class="move-folder-summary">
+          <div>
+            <strong>{{ moveDialogFiles.length }}</strong>
+            个文件将移动到新的目录
+          </div>
+          <span>当前目标：{{ moveDialogTargetLabel }}</span>
+        </div>
+
+        <div class="move-folder-toolbar">
+          <el-input
+            size="small"
+            clearable
+            prefix-icon="el-icon-search"
+            v-model="moveDialogFolderSearch"
+            placeholder="搜索后端已有目录">
+          </el-input>
+          <el-button
+            size="small"
+            icon="el-icon-refresh"
+            :loading="moveDialogFoldersLoading"
+            @click="refreshMoveDialogFolders(true)">
+            刷新目录
+          </el-button>
+        </div>
+
+        <div class="move-folder-list" v-loading="moveDialogFoldersLoading">
+          <button
+            v-for="folder in moveDialogFolderOptions"
+            :key="'move-folder-' + folder.path"
+            type="button"
+            class="move-folder-option"
+            :class="{ 'is-active': moveDialogTargetPath === folder.path }"
+            @click="selectMoveDialogFolder(folder.path)">
+            <i :class="folder.path ? 'fas fa-folder' : 'fas fa-house'"></i>
+            <span class="move-folder-option-name">{{ folder.label }}</span>
+            <span class="move-folder-option-meta">
+              {{ folder.fileCountLabel }}
+            </span>
+          </button>
+          <div v-if="!moveDialogFoldersLoading && moveDialogFolderOptions.length === 0" class="move-folder-empty">
+            没有匹配的目录，可以在下方新建后直接移动。
+          </div>
+        </div>
+
+        <div class="move-folder-create">
+          <div class="move-folder-target">
+            新建目录并移动：输入路径后点击“新建并移动”，不会改变文件原始直链。
+          </div>
+          <div class="move-folder-create-row">
+            <el-input
+              size="small"
+              v-model="moveDialogNewFolderPath"
+              placeholder="例如：图片/2026/七月"
+              @keyup.enter.native="createFolderAndMoveSelected">
+            </el-input>
+            <el-button
+              size="small"
+              type="success"
+              icon="el-icon-folder-add"
+              :loading="moveDialogLoading"
+              @click="createFolderAndMoveSelected">
+              新建并移动
+            </el-button>
+          </div>
+        </div>
+      </div>
+
+      <span slot="footer" class="dialog-footer move-folder-footer">
+        <span class="move-folder-target">将移动到：{{ moveDialogTargetLabel }}</span>
+        <span>
+          <el-button size="small" @click="moveDialogVisible = false">取消</el-button>
+          <el-button
+            size="small"
+            type="primary"
+            :loading="moveDialogLoading"
+            @click="confirmMoveDialog">
+            移动到所选目录
+          </el-button>
+        </span>
+      </span>
+    </el-dialog>
+
     <!-- 预览弹窗 - 模态框模式（不跳转新标签页） -->
     <div class="preview-modal" v-if="previewData" @click="closePreview">
       <button class="preview-close" @click.stop="closePreview">
@@ -1715,6 +1962,13 @@
         expiryPreset: 'never',
         customExpiresAt: '',
       },
+      moveDialogVisible: false,
+      moveDialogLoading: false,
+      moveDialogFoldersLoading: false,
+      moveDialogFiles: [],
+      moveDialogTargetPath: '',
+      moveDialogFolderSearch: '',
+      moveDialogNewFolderPath: '',
     },
     computed: {
       filteredTableData() {
@@ -1840,6 +2094,45 @@
         if (!this.dragState.active) return '未选择目录';
         const target = this.normalizeFolderPath(this.dragState.targetPath || '');
         return target || '根目录';
+      },
+      moveDialogTargetLabel() {
+        const target = this.normalizeFolderPath(this.moveDialogTargetPath || '');
+        return target || '根目录';
+      },
+      moveDialogFolderOptions() {
+        const keyword = String(this.moveDialogFolderSearch || '').trim().toLowerCase();
+        const normalized = new Map();
+        normalized.set('', {
+          path: '',
+          label: '根目录',
+          fileCount: this.folderPath ? 0 : this.Number,
+        });
+        (this.folders || []).forEach((folder) => {
+          const path = this.normalizeFolderPath(folder.path || folder.folderPath || '');
+          if (!path) return;
+          normalized.set(path, {
+            path,
+            label: path,
+            fileCount: Number(folder.fileCount || 0),
+          });
+        });
+        return Array.from(normalized.values())
+          .filter((folder) => {
+            if (!keyword) return true;
+            return folder.label.toLowerCase().includes(keyword);
+          })
+          .map((folder) => ({
+            ...folder,
+            fileCountLabel: folder.path ? `${folder.fileCount || 0} 个文件` : '根目录',
+          }))
+          .sort((a, b) => {
+            if (!a.path) return -1;
+            if (!b.path) return 1;
+            const depthA = a.path.split('/').length;
+            const depthB = b.path.split('/').length;
+            if (depthA !== depthB) return depthA - depthB;
+            return a.path.localeCompare(b.path, 'zh-CN');
+          });
       },
       batchToolbarStyle() {
         if (this.isMobileViewport) {
@@ -2380,9 +2673,11 @@
           const response = await fetch(`./api/manage/folders${query ? `?${query}` : ''}`, { method: 'GET', credentials: 'include' });
           const data = await response.json();
           this.folders = Array.isArray(data?.folders) ? data.folders : [];
+          return true;
         } catch (error) {
           this.folders = [];
           this.$message.error('目录列表加载失败');
+          return false;
         } finally {
           this.folderLoading = false;
         }
@@ -2550,83 +2845,150 @@
           if (error !== 'cancel' && error !== 'close') this.$message.error(error.message || '目录删除失败');
         }
       },
-      async moveSelectedToFolder() {
-        if (this.selectedFiles.length === 0) {
+      moveSelectedToFolder() {
+        this.openMoveDialog(this.selectedFiles);
+      },
+      openMoveDialog(files = []) {
+        const candidates = Array.isArray(files) ? files.filter(Boolean) : [];
+        if (candidates.length === 0) {
           this.$message.warning('请先选择文件');
           return;
         }
-        let previousRows = null;
-        let previousFolders = null;
+        this.moveDialogFiles = candidates.slice();
+        this.moveDialogTargetPath = this.normalizeFolderPath(this.folderPath || '');
+        this.moveDialogFolderSearch = '';
+        this.moveDialogNewFolderPath = this.moveDialogTargetPath ? `${this.moveDialogTargetPath}/新目录` : '新目录';
+        this.moveDialogVisible = true;
+      },
+      async refreshMoveDialogFolders(showMessage = false) {
+        if (this.moveDialogFoldersLoading) return;
+        this.moveDialogFoldersLoading = true;
         try {
-          const prompt = await this.$prompt('请输入目标目录路径（留空表示根目录）', '移动文件', {
-            inputValue: this.folderPath || '',
-            confirmButtonText: '移动',
-            cancelButtonText: '取消',
-          });
-          const targetFolderPath = this.normalizeFolderPath(prompt.value || '');
-          const filesPayload = this.selectedFiles.map((item) => this.getFileMovePayload(item));
-          const ids = filesPayload.map((item) => item.id).filter(Boolean);
-          const hasEffectiveMove = ids.some((id) => {
-            const file = this.findFileByMoveId(id);
-            const current = this.normalizeFolderPath(file?.metadata?.folderPath || '');
-            return current !== targetFolderPath;
-          });
-          if (!hasEffectiveMove) {
-            this.$message.info('所选文件已在当前目录');
-            return;
+          const refreshed = await this.fetchFolders();
+          if (showMessage && refreshed) this.$message.success('已获取最新后端目录');
+          if (showMessage && !refreshed) this.$message.error('目录刷新失败，请稍后重试');
+        } catch (error) {
+          if (showMessage) this.$message.error(error?.message || '目录刷新失败');
+        } finally {
+          this.moveDialogFoldersLoading = false;
+        }
+      },
+      selectMoveDialogFolder(path = '') {
+        this.moveDialogTargetPath = this.normalizeFolderPath(path);
+      },
+      async createFolderAndMoveSelected() {
+        const path = this.normalizeFolderPath(this.moveDialogNewFolderPath);
+        if (!path) {
+          this.$message.warning('请输入要新建的目录路径');
+          return;
+        }
+        this.moveDialogLoading = true;
+        const previousFolders = this.cloneFoldersSnapshot();
+        let folderCreated = false;
+        try {
+          this.ensureFolderBranchLocal(path);
+          const response = await fetch('./api/manage/folders', {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ path }),
+          }).then((r) => r.json());
+          if (!response?.success) throw new Error(response?.error || '目录创建失败');
+          folderCreated = true;
+          this.moveDialogTargetPath = path;
+          const moved = await this.moveFilesToFolder(this.moveDialogFiles, path);
+          if (moved) this.moveDialogVisible = false;
+        } catch (error) {
+          if (!folderCreated) {
+            this.folders = previousFolders;
+            this.sortFoldersLocal();
           }
+          this.$message.error(error.message || '新建并移动失败');
+        } finally {
+          this.moveDialogLoading = false;
+        }
+      },
+      async confirmMoveDialog() {
+        this.moveDialogLoading = true;
+        try {
+          const moved = await this.moveFilesToFolder(this.moveDialogFiles, this.moveDialogTargetPath);
+          if (moved) this.moveDialogVisible = false;
+        } catch (error) {
+          this.$message.error(error.message || '移动文件失败');
+        } finally {
+          this.moveDialogLoading = false;
+        }
+      },
+      async moveFilesToFolder(files, targetFolderPathValue) {
+        const selected = Array.isArray(files) ? files.filter(Boolean) : [];
+        if (selected.length === 0) {
+          throw new Error('请先选择文件');
+        }
+        const targetFolderPath = this.normalizeFolderPath(targetFolderPathValue || '');
+        const filesPayload = selected.map((item) => this.getFileMovePayload(item));
+        const ids = filesPayload.map((item) => item.id).filter(Boolean);
+        const hasEffectiveMove = ids.some((id) => {
+          const file = this.findFileByMoveId(id);
+          const current = this.normalizeFolderPath(file?.metadata?.folderPath || '');
+          return current !== targetFolderPath;
+        });
+        if (!hasEffectiveMove) {
+          this.$message.info('所选文件已在目标目录');
+          return false;
+        }
 
-          const idSet = new Set(ids);
-          previousRows = this.tableData.map((file) => ({
-            ...file,
-            metadata: { ...(file.metadata || {}) },
+        const idSet = new Set(ids);
+        const previousRows = this.tableData.map((file) => ({
+          ...file,
+          metadata: { ...(file.metadata || {}) },
+        }));
+        const previousFolders = this.cloneFoldersSnapshot();
+        const normalizedCurrentFolder = this.normalizeFolderPath(this.folderPath);
+        const movedRows = this.tableData
+          .filter((row) => this.isRowInMoveSet(row, idSet))
+          .map((row) => ({
+            name: this.getFileMoveId(row),
+            sourceFolderPath: this.normalizeFolderPath(row?.metadata?.folderPath || ''),
           }));
-          previousFolders = this.cloneFoldersSnapshot();
-          const normalizedCurrentFolder = this.normalizeFolderPath(this.folderPath);
-          const movedRows = this.tableData
-            .filter((row) => this.isRowInMoveSet(row, idSet))
-            .map((row) => ({
-              name: this.getFileMoveId(row),
-              sourceFolderPath: this.normalizeFolderPath(row?.metadata?.folderPath || ''),
-            }));
 
-          this.tableData = this.tableData
-            .map((row) => {
-              if (!this.isRowInMoveSet(row, idSet)) return row;
-              return {
-                ...row,
-                metadata: {
-                  ...(row.metadata || {}),
-                  folderPath: targetFolderPath,
-                },
-                selected: false,
-              };
-            })
-            .filter((row) => this.normalizeFolderPath(row?.metadata?.folderPath || '') === normalizedCurrentFolder);
+        this.tableData = this.tableData
+          .map((row) => {
+            if (!this.isRowInMoveSet(row, idSet)) return row;
+            return {
+              ...row,
+              metadata: {
+                ...(row.metadata || {}),
+                folderPath: targetFolderPath,
+              },
+              selected: false,
+            };
+          })
+          .filter((row) => this.normalizeFolderPath(row?.metadata?.folderPath || '') === normalizedCurrentFolder);
 
-          movedRows.forEach((moved) => {
-            const sourceNode = (this.folders || []).find((folder) => {
-              const candidate = this.normalizeFolderPath(folder.path || folder.folderPath || '');
-              return candidate === moved.sourceFolderPath;
-            });
-            if (sourceNode && moved.sourceFolderPath !== targetFolderPath) {
-              sourceNode.fileCount = Math.max(0, Number(sourceNode.fileCount || 0) - 1);
-            }
+        movedRows.forEach((moved) => {
+          const sourceNode = (this.folders || []).find((folder) => {
+            const candidate = this.normalizeFolderPath(folder.path || folder.folderPath || '');
+            return candidate === moved.sourceFolderPath;
           });
-          if (targetFolderPath) {
-            this.ensureFolderBranchLocal(targetFolderPath);
-            const targetNode = (this.folders || []).find((folder) => {
-              const candidate = this.normalizeFolderPath(folder.path || folder.folderPath || '');
-              return candidate === targetFolderPath;
-            });
-            if (targetNode) {
-              const addCount = movedRows.filter((item) => item.sourceFolderPath !== targetFolderPath).length;
-              targetNode.fileCount = Number(targetNode.fileCount || 0) + addCount;
-            }
+          if (sourceNode && moved.sourceFolderPath !== targetFolderPath) {
+            sourceNode.fileCount = Math.max(0, Number(sourceNode.fileCount || 0) - 1);
           }
-          this.sortFoldersLocal();
-          this.updateStats();
+        });
+        if (targetFolderPath) {
+          this.ensureFolderBranchLocal(targetFolderPath);
+          const targetNode = (this.folders || []).find((folder) => {
+            const candidate = this.normalizeFolderPath(folder.path || folder.folderPath || '');
+            return candidate === targetFolderPath;
+          });
+          if (targetNode) {
+            const addCount = movedRows.filter((item) => item.sourceFolderPath !== targetFolderPath).length;
+            targetNode.fileCount = Number(targetNode.fileCount || 0) + addCount;
+          }
+        }
+        this.sortFoldersLocal();
+        this.updateStats();
 
+        try {
           const result = await fetch('./api/manage/files/move-folder', {
             method: 'POST',
             credentials: 'include',
@@ -2640,17 +3002,12 @@
           this.$message.success(`已移动 ${result.moved || 0} 个文件到 ${targetFolderPath || '根目录'}`);
           this.clearFolderCache();
           await this.fetchFolders();
+          return true;
         } catch (error) {
-          if (error !== 'cancel' && error !== 'close') {
-            if (previousRows) {
-              this.tableData = previousRows;
-            }
-            if (previousFolders) {
-              this.folders = previousFolders;
-            }
-            this.updateStats();
-            this.$message.error(error.message || '移动文件失败');
-          }
+          this.tableData = previousRows;
+          this.folders = previousFolders;
+          this.updateStats();
+          throw error;
         }
       },
       resetViewConditions() {
